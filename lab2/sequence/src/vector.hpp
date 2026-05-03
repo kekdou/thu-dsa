@@ -21,29 +21,32 @@ class Vector : public DequeInterface<Vector<T, GrowthNum, GrowthDen>, T> {
     void grow() {
         // TODO: 实现扩容逻辑
         // 当 size >= capacity 时调用，需要增大 capacity
-        T* old_data = data_;
-        capacity_ = size_ * GrowthNum / GrowthDen;
-        data_ = new T[capacity_];
-        for (size_t i = 0; i < size_; i++) {
-            data_[i] = old_data[i];
+        std::size_t new_capacity = (capacity_ == 0) ? INITIAL_CAPACITY : capacity_ * GrowthNum / GrowthDen;
+        if (new_capacity <= capacity_) {
+            new_capacity = capacity_ + 1;
         }
-        delete [] old_data;
+        reserve(new_capacity);
     }
     
     void shrink() {
         // TODO: 实现缩容逻辑
         // 当 size < capacity/(R*R)，将 capacity 缩小
-        size_t criterion = capacity_ * GrowthDen * GrowthDen / GrowthNum / GrowthNum;
-        if (size_ > criterion) {
+        std::size_t threshold = capacity_ * GrowthDen * GrowthDen / GrowthNum / GrowthNum;
+        if (size_ > threshold) {
             return;
         }
-        T* old_data = data_;
-        capacity_ = size_ * GrowthDen / GrowthNum;
-        data_ = new T[capacity_];
-        for (size_t i = 0; i < size_; i++) {
-            data_[i] = old_data[i];
+        std::size_t new_capacity = capacity_ * GrowthDen / GrowthNum;
+        if (new_capacity < INITIAL_CAPACITY) {
+            new_capacity = INITIAL_CAPACITY;
         }
-        delete [] old_data;
+        if (new_capacity <= size_) {
+            new_capacity = size_ + 1;
+        }
+        T* old_data = data_;
+        data_ = new T[new_capacity];
+        std::memcpy(data_, old_data, size_ * sizeof(T));
+        delete[] old_data;
+        capacity_ = new_capacity;
     }
 
 public:

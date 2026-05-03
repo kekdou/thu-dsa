@@ -295,8 +295,8 @@ public:
         // TODO: 在位置 index 插入值 val
         // 使用 SoA 布局：val_[], prev_[], next_[]
         int idx = alloc_node();
-        val[idx] = val;
-        int next_idx = get_node_idx(idx);
+        val_[idx] = val;
+        int next_idx = get_node_idx(index);
         int prev_idx = prev_[next_idx];
         next_[prev_idx] = idx;
         prev_[idx] = prev_idx;
@@ -307,7 +307,7 @@ public:
     
     void remove(int index) {
         // TODO: 删除位置 index 的元素
-        int idx = get_node_idx[index];
+        int idx = get_node_idx(index);
         int prev_idx = prev_[idx];
         int next_idx = next_[idx];
         next_[prev_idx]= next_idx;
