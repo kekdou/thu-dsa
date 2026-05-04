@@ -31,7 +31,7 @@ struct BigData {
     }
 };
 
-using DataType = int;
+using DataType = BigData;
 
 std::vector<Operation> read_operations(const std::string& filename) {
     std::ifstream fin(filename);
@@ -197,17 +197,53 @@ void print_benchmark(const std::string& name, const std::vector<std::pair<std::s
 
 void run_benchmark(const std::string& filename) {
     auto ops = read_operations(filename);
-    
     std::vector<std::pair<std::string, double>> results = {
-        {"std::vector",       benchmark_container<StdVector<DataType>>(ops)},
-        {"Vector<2x>",        benchmark_container<Vector2x<DataType>>(ops)},
-        {"Vector<1.5x>",      benchmark_container<Vector15x<DataType>>(ops)},
+        // {"std::vector",       benchmark_container<StdVector<DataType>>(ops)},
+        // {"Vector<1.5x>",      benchmark_container<Vector15x<DataType>>(ops)},
+        // {"Vector<2x>",        benchmark_container<Vector2x<DataType>>(ops)},
+        // {"Vector<4x>",        benchmark_container<Vector4x<DataType>>(ops)},
+        // {"Vector<8x>",        benchmark_container<Vector8x<DataType>>(ops)},
         {"PtrLinkedList",     benchmark_container<PtrLinkedList<DataType>>(ops)},
         {"PoolPtrLinkedList", benchmark_container<PoolPtrLinkedList<DataType>>(ops)},
         {"ArrayLinkedList",   benchmark_container<ArrayLinkedList<DataType>>(ops)},
         {"UnrollLinkedList<64>",   benchmark_container<UnrollLinkedList64<DataType>>(ops)},
         {"UnrollLinkedList<256>",  benchmark_container<UnrollLinkedList256<DataType>>(ops)},
-        {"XorLinkedList",     benchmark_container<XorLinkedList<DataType>>(ops)},
+        // {"XorLinkedList",     benchmark_container<XorLinkedList<DataType>>(ops)},
+    };
+    
+    print_benchmark(extract_test_name(filename) + " (n=" + std::to_string(ops.size()) + ")", results, ops.size());
+}
+
+template<typename Container>
+double benchmark_container2(const std::vector<Operation>& ops) {
+    try {
+        Container c;
+        auto ops2 = read_operations("data/append.txt");
+        execute_ops(c, ops2);
+        auto start = std::chrono::high_resolution_clock::now();
+        execute_ops(c, ops);
+        auto end = std::chrono::high_resolution_clock::now();
+        return std::chrono::duration<double, std::milli>(end - start).count();
+    } catch (...) {
+        return -1;  // SKIP
+    }
+}
+
+void run_benchmark2(const std::string& filename) {
+    auto ops = read_operations(filename);
+    
+    std::vector<std::pair<std::string, double>> results = {
+        // {"std::vector",       benchmark_container2<StdVector<DataType>>(ops)},
+        // {"Vector<1.5x>",      benchmark_container<Vector15x<DataType>>(ops)},
+        // {"Vector<2x>",        benchmark_container<Vector2x<DataType>>(ops)},
+        // {"Vector<4x>",        benchmark_container<Vector4x<DataType>>(ops)},
+        // {"Vector<8x>",        benchmark_container<Vector8x<DataType>>(ops)},
+        {"PtrLinkedList",     benchmark_container2<PtrLinkedList<DataType>>(ops)},
+        {"PoolPtrLinkedList", benchmark_container2<PoolPtrLinkedList<DataType>>(ops)},
+        {"ArrayLinkedList",   benchmark_container2<ArrayLinkedList<DataType>>(ops)},
+        {"UnrollLinkedList<64>",   benchmark_container2<UnrollLinkedList64<DataType>>(ops)},
+        {"UnrollLinkedList<256>",  benchmark_container2<UnrollLinkedList256<DataType>>(ops)},
+        // {"XorLinkedList",     benchmark_container2<XorLinkedList<DataType>>(ops)},
     };
     
     print_benchmark(extract_test_name(filename) + " (n=" + std::to_string(ops.size()) + ")", results, ops.size());
@@ -215,14 +251,14 @@ void run_benchmark(const std::string& filename) {
 
 void run_traverse(std::size_t n, std::size_t m) {
     std::vector<std::pair<std::string, double>> results = {
-        {"std::vector",       benchmark_traverse<StdVector<DataType>>(n, m)},
-        {"Vector<2x>",        benchmark_traverse<Vector2x<DataType>>(n, m)},
-        {"PtrLinkedList",     benchmark_traverse<PtrLinkedList<DataType>>(n, m)},
-        {"PoolPtrLinkedList", benchmark_traverse<PoolPtrLinkedList<DataType>>(n, m)},
-        {"ArrayLinkedList",   benchmark_traverse<ArrayLinkedList<DataType>>(n, m)},
+        // {"std::vector",       benchmark_traverse<StdVector<DataType>>(n, m)},
+        // {"Vector<2x>",        benchmark_traverse<Vector2x<DataType>>(n, m)},
+        // {"PtrLinkedList",     benchmark_traverse<PtrLinkedList<DataType>>(n, m)},
+        // {"PoolPtrLinkedList", benchmark_traverse<PoolPtrLinkedList<DataType>>(n, m)},
+        // {"ArrayLinkedList",   benchmark_traverse<ArrayLinkedList<DataType>>(n, m)},
         {"UnrollLinkedList<64>",   benchmark_traverse<UnrollLinkedList64<DataType>>(n, m)},
         {"UnrollLinkedList<256>",  benchmark_traverse<UnrollLinkedList256<DataType>>(n, m)},
-        {"XorLinkedList",     benchmark_traverse<XorLinkedList<DataType>>(n, m)},
+        // {"XorLinkedList",     benchmark_traverse<XorLinkedList<DataType>>(n, m)},
     };
     print_benchmark("traverse (n=" + std::to_string(n) + ", m=" + std::to_string(m) + ")", results, n * m);
 }
@@ -232,7 +268,9 @@ void run_traverse(std::size_t n, std::size_t m) {
 // ============================================================================
 const std::vector<std::string> ALL_FILES = {
     "data/append.txt", "data/stack.txt", "data/queue.txt",
-    "data/deque.txt", "data/random_insert.txt", "data/query.txt", "data/mixed.txt"
+    "data/deque.txt", "data/random_insert.txt", "data/query.txt", "data/mixed.txt", 
+    "data/pop_back.txt", "data/random_remove.txt", "data/pop_front.txt", 
+    "data/push_front.txt"
 };
 
 void print_usage(const char* prog) {
@@ -271,12 +309,18 @@ int main(int argc, char* argv[]) {
         std::ifstream test(f);
         if (test.good()) {
             if (check_mode) run_check(f);
-            else run_benchmark(f);
+            else {
+                if (extract_test_name(f) == "pop_back" || extract_test_name(f) == "pop_front" || extract_test_name(f) == "random_remove" || "query") {
+                    run_benchmark2(f);
+                } else {
+                    run_benchmark(f);
+                }
+            }
         }
     }
     
-    if (do_traverse && !check_mode) run_traverse(n, m);
-    if (do_all && !check_mode) run_traverse(n, m);
+    // if (do_traverse && !check_mode) run_traverse(n, m);
+    // if (do_all && !check_mode) run_traverse(n, m);
     
     return 0;
 }

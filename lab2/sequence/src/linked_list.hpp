@@ -75,6 +75,44 @@ public:
         --size_;
     }
     
+    void push_front(T val) {
+        Node* next_node = head_->next;
+        Node* new_node = new Node(val, head_, next_node);
+        head_->next = new_node;
+        next_node->prev = new_node;
+        size_++;
+    }
+
+    void push_back(T val) {
+        Node* prev_node = tail_->prev;
+        Node* new_node = new Node(val, prev_node, tail_);
+        tail_->prev = new_node;
+        prev_node->next = new_node;
+        size_++;
+    }
+
+    void pop_front() {
+        Node* node = head_->next;
+        if (node == tail_) {
+            return;
+        }
+        head_->next = node->next;
+        node->next->prev = head_;
+        delete node;
+        size_--;
+    }
+
+    void pop_back() {
+        Node* node = tail_->prev;
+        if (node == head_) {
+            return;
+        }
+        tail_->prev = node->prev;
+        node->prev->next = tail_;
+        delete node;
+        size_--;
+    }
+
     T query(int index) const {
         return get_node(index)->val;
     }
@@ -196,6 +234,50 @@ public:
         size_--;
     }
     
+    void push_front(T val) {
+        Node* new_node = alloc_node();
+        new_node->val = val;
+        new_node->next = head_->next;
+        new_node->prev = head_;
+        Node* next_node = head_->next;
+        next_node->prev = new_node;
+        head_->next = new_node;
+        size_++;
+    }
+
+    void push_back(T val) {
+        Node* new_node = alloc_node();
+        new_node->val = val;
+        new_node->prev = tail_->prev;
+        new_node->next = tail_;
+        Node* prev_node = tail_->prev;
+        prev_node->next = new_node;
+        tail_->prev = new_node;
+        size_++;
+    }
+
+    void pop_front() {
+        Node* node = head_->next;
+        if (node == tail_) {
+            return;
+        }
+        head_->next = node->next;
+        node->next->prev = head_;
+        free_node(node);
+        size_--;
+    }
+
+    void pop_back() {
+        Node* node = tail_->prev;
+        if (node == head_) {
+            return;
+        }
+        tail_->prev = node->prev;
+        node->prev->next = tail_;
+        free_node(node);
+        size_--;
+    }
+    
     T query(int index) const {
         return get_node(index)->val;
     }
@@ -312,6 +394,48 @@ public:
         int next_idx = next_[idx];
         next_[prev_idx]= next_idx;
         prev_[next_idx] = prev_idx;
+        free_node(idx);
+        size_--;
+    }
+    
+    void push_front(T val) {
+        int idx = alloc_node();
+        val_[idx] = val;
+        next_[idx] = next_[head_];
+        prev_[idx] = head_;
+        prev_[next_[head_]] = idx;
+        next_[head_] = idx;
+        size_++;
+    }
+
+    void push_back(T val) {
+        int idx = alloc_node();
+        val_[idx] = val;
+        next_[idx] = tail_;
+        prev_[idx] = prev_[tail_];
+        next_[prev_[tail_]] = idx;
+        prev_[tail_] = idx;
+        size_++;
+    }
+
+    void pop_front() {
+        int idx = next_[head_];
+        if (idx == tail_) {
+            return;
+        }
+        next_[head_] = next_[idx];
+        prev_[next_[idx]] = head_;
+        free_node(idx);
+        size_--;
+    }
+
+    void pop_back() {
+        int idx = prev_[tail_];
+        if (idx == head_) {
+            return;
+        }
+        prev_[tail_] = prev_[idx];
+        next_[prev_[idx]] = tail_;
         free_node(idx);
         size_--;
     }

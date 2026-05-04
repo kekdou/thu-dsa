@@ -25,6 +25,23 @@ def gen_append(n: int) -> str:
         lines.append(f"B {i}")
     return "\n".join(lines)
 
+def gen_push_front(n: int) -> str:
+    lines = [str(n)]
+    for i in range(n):
+        lines.append(f"F {i}")
+    return "\n".join(lines)
+
+def gen_pop_back(n: int) -> str:
+    lines = [str(n)]
+    for i in range(n):
+        lines.append(f"b")
+    return "\n".join(lines)
+
+def gen_pop_front(n: int) -> str:
+    lines = [str(n)]
+    for i in range(n):
+        lines.append(f"f")
+    return "\n".join(lines)
 
 def gen_stack(n: int) -> str:
     """栈操作：push_back / pop_back"""
@@ -89,17 +106,22 @@ def gen_random_insert(n: int) -> str:
         size += 1
     return "\n".join(lines)
 
+def gen_random_remove(n: int) -> str:
+    lines = [str(n)]
+    size = n - 1
+    for _ in range(n):
+        idx = random.randint(0, size)
+        lines.append(f"R {idx}")
+        size -= 1
+    return "\n".join(lines)
 
-def gen_query(n: int, build: int) -> str:
+def gen_query(n: int) -> str:
     """先构建，再大量查询"""
-    ops = build + n
+    ops = n
     lines = [str(ops)]
-    # 构建
-    for i in range(build):
-        lines.append(f"B {i}")
     # 查询
     for _ in range(n):
-        idx = random.randint(0, build - 1)
+        idx = random.randint(0, n - 1)
         lines.append(f"Q {idx}")
     return "\n".join(lines)
 
@@ -155,6 +177,10 @@ def main():
             "query",
             "mixed",
             "all",
+            "pop_back", 
+            "random_remove", 
+            "pop_front", 
+            "push_front"
         ],
         default="all",
         help="数据类型",
@@ -175,8 +201,12 @@ def main():
         "queue": lambda: gen_queue(args.n),
         "deque": lambda: gen_deque(args.n),
         "random_insert": lambda: gen_random_insert(args.n),
-        "query": lambda: gen_query(args.n, args.build),
+        "query": lambda: gen_query(args.n),
         "mixed": lambda: gen_mixed(args.n),
+        "pop_back": lambda: gen_pop_back(args.n), 
+        "random_remove": lambda: gen_random_remove(args.n), 
+        "pop_front": lambda: gen_pop_front(args.n), 
+        "push_front": lambda: gen_push_front(args.n)
     }
 
     if args.type == "all":

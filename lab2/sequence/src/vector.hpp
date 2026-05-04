@@ -124,4 +124,11 @@ template <class T>
 using Vector2x = Vector<T, 2, 1>;    // 2倍扩容
 template <class T>
 using Vector15x = Vector<T, 3, 2>;   // 1.5倍扩容
-
+template <class T>
+using Vector3x = Vector<T, 3, 1>;
+template <class T>
+using Vector4x = Vector<T, 4, 1>;
+template <class T>
+using Vector8x = Vector<T, 8, 1>;
+template <class T>
+using Vector16x = Vector<T, 16, 1>;
